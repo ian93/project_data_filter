@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Data</title>
+    <script src="https://d3js.org/d3.v3.js"></script>
+</head>
+<body>
+    <script>
+
+        // 用d3讀取csv
+        d3.csv("data.csv", transData, function(dataSet){
+//            console.log(dataSet);    
+            
+            var caseData = cases(dataSet);
+//                console.log(caseData);
+            
+            placeList(caseData);
+            
+        });
+        
+        //----------------資料處理區----------------
+        
+        // 案件過濾 --- 獲得全新陣列
+        function cases(dataSet){
+            var n = dataSet.filter(function(d){
+                return d.parties === 1;
+            })
+            return n;
+        }
+
+        // 地點過濾
+        function placeList(dataSet){
+            var placeArr = dataSet.map(function(d){
+                return d.place;
+            });
+//                console.log(placeArr);
+            var uPlaceArr = unique(placeArr);
+//                console.log(uPlaceArr);
+            var pplPlaceArr = pplCalc(placeArr);
+//                console.log(pplPlaceArr);
+            
+            var max = d3.max(pplPlaceArr);
+//                console.log(max);
+            var maxIndexesArr = findIndexes(pplPlaceArr, max);
+//                console.log(maxIndexesArr);
+            for(var i = 0; i < maxIndexesArr.length; i++){
+//                console.log(uPlaceArr[maxIndexesArr[i]]);
+            }
+            
+            var topAcciList = [];
+            for(var i = 0; i < uPlaceArr.length; i++){
+                topAcciList.push({place: uPlaceArr[i], cases: pplPlaceArr[i]});
+            };
+//                console.log(topAcciList);
+            
+            var topAcciList = topAcciList.sort(function(a, b){
+                return d3.descending(a.cases, b.cases);
+            });
+            topAcciList.length = 48;
+                console.log(topAcciList);
+            
+        }
+        
+        // 函式區
+        function findIndexes(array, number){
+            var n = [];
+            for(var i = 0; i < array.length; i++){
+                if (array[i] == number){
+                    n.push(i);
+                }
+            }
+            return n;
+        }
+        
+        function unique(array){
+            var n = [];
+            for(var i = 0; i < array.length; i++){
+                if (n.indexOf(array[i]) == -1){
+                    n.push(array[i]);
+                }
+            }
+            return n;
+        }
+        
+        function pplCalc(array){
+            var n = [];
+            var m = [];
+            
+            for(var i = 0; i < array.length; i++){
+                if (n.indexOf(array[i]) == -1){
+                    n.push(array[i]);
+                    m[n.length - 1] = 1;
+                }else{
+                    m[n.length - 1]++;
+                }
+            }
+            return m;
+        }
+        
+        // 將csv中讀入的欄位內容(預設為字串)轉為數值
+        function transData(d){            
+            d.month   = +d.month  ; // 月
+            d.day     = +d.day    ; // 日
+            d.hour    = +d.hour   ; // 時
+            d.minute  = +d.minute ; // 分
+            d.A       = +d.A      ; // A1類或A2類車禍
+            d.dead    = +d.dead   ; // 案件總死亡人數
+            d.injured = +d.injured; // 案件總受傷人數
+            d.parties = +d.parties; // 當事人序
+            d.sex     = +d.sex    ; // 性別
+            d.age     = +d.age    ; // 年齡
+            d.triage  = +d.triage ; // 受傷程度
+            d.weather = +d.weather; // 天氣
+            d.sLimit  = +d.sLimit ; // 道路速限
+            d.r1Type  = +d.r1Type ; // 道路型態
+            d.r2Type  = +d.r2Type ; // 事故位置
+            return d;
+        }
+        //----------------資料處理區 End----------------
+    </script>
+</body>
+</html>
